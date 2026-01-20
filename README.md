@@ -2,6 +2,7 @@
 
 [![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://vthuan1889.github.io/vibe-kktyping/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Support-orange)](https://buymeacoffee.com/vthuan1889)
 
 **[Play Now](https://vthuan1889.github.io/vibe-kktyping/)**
 
@@ -21,6 +22,8 @@ An educational typing game for kids aged 5-6, featuring Kaka the Mouse as the ma
 - **Phaser 3** - Game engine
 - **TypeScript** - Type safety
 - **Vite** - Build tool
+
+Built with [ClaudeKit](https://claudekit.cc/?ref=VSP5VCLF)
 
 ## Quick Start
 
