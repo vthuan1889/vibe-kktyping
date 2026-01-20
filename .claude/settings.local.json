@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir:*)",
+      "Bash(git init:*)",
+      "Bash(git remote add:*)",
+      "Bash(git branch:*)",
+      "Skill(docs-seeker)",
+      "Skill(docs-seeker:*)",
+      "Read(//c/Users/thuan/.claude/skills/docs-seeker/**)",
+      "Bash(node scripts/fetch-docs.js:*)",
+      "Bash(node:*)",
+      "Bash(C:\\\\Users\\\\thuan\\\\.claude\\\\skills\\\\.venv\\\\Scripts\\\\python.exe:*)",
+      "Bash(python:*)",
+      "Bash(if not exist \"d:\\\\Code-Tool\\\\Vibe\\\\vibe-kktyping\\\\docs\\\\wireframes\" mkdir:*)",
+      "Bash(npm install)",
+      "Bash(npm run typecheck:*)",
+      "Bash(npm run build)",
+      "Bash(timeout 5 npm run dev:*)",
+      "Bash(npm run dev)",
+      "Bash(timeout:*)",
+      "Bash(git add:*)",
+      "Read(//d/Code-Tool/Vibe/vibe-kktyping/**)",
+      "Bash(awk:*)"
+    ]
+  }
+}
