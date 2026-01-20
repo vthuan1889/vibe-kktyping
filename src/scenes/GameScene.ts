@@ -13,9 +13,11 @@ export class GameScene extends Phaser.Scene {
   private currentIndex = 0;
   private mistakes = 0;
   private targetText!: Phaser.GameObjects.Text;
+  private targetTextOriginalX = 0; // Store original X position
   private progressBar!: Phaser.GameObjects.Graphics;
   private keyboardKeys: Map<string, Phaser.GameObjects.Container> = new Map();
   private mascot!: Phaser.GameObjects.Text;
+  private isShaking = false; // Prevent multiple shake animations
 
   constructor() {
     super({ key: SCENES.GAME });
@@ -151,6 +153,9 @@ export class GameScene extends Phaser.Scene {
       fontSize: '180px',
       color: '#ffffff',
     }).setOrigin(0.5).setShadow(4, 4, 'rgba(0,0,0,0.3)', 8);
+
+    // Store original X position for shake animation reset
+    this.targetTextOriginalX = centerX;
 
     // Bounce animation
     this.tweens.add({
@@ -334,11 +339,14 @@ export class GameScene extends Phaser.Scene {
   private handleWrongKey(): void {
     this.mistakes++;
 
-    // Shake animation on target letter
-    const originalX = this.targetText.x;
+    // Prevent multiple shake animations from stacking
+    if (this.isShaking) return;
+    this.isShaking = true;
+
+    // Shake animation on target letter - always use original position
     this.tweens.add({
       targets: this.targetText,
-      x: originalX + 15,
+      x: this.targetTextOriginalX + 15,
       duration: 50,
       yoyo: true,
       repeat: 3,
@@ -346,7 +354,10 @@ export class GameScene extends Phaser.Scene {
         this.targetText.setTint(0xff0000);
       },
       onComplete: () => {
+        // Reset to exact original position
+        this.targetText.x = this.targetTextOriginalX;
         this.targetText.setTint(0xffffff);
+        this.isShaking = false;
       },
     });
 
