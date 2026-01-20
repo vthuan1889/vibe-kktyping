@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kaka's Adventure - Treasure Map v3 (Winding Path)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: #1a1a2e;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .game-container {
+      width: 1280px;
+      height: 720px;
+      border-radius: 24px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      background: #87CEEB;
+    }
+
+    /* Sky gradient */
+    .sky {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(180deg,
+        #1a237e 0%,      /* Space at top */
+        #3949ab 15%,
+        #5c6bc0 25%,
+        #e91e63 35%,     /* Candy transition */
+        #f48fb1 42%,
+        #64b5f6 52%,     /* Ocean */
+        #2196f3 60%,
+        #81c784 70%,     /* Garden */
+        #4caf50 80%,
+        #ffd93d 90%,     /* Cheese factory at bottom */
+        #ff9f1c 100%
+      );
+    }
+
+    /* Decorative elements per zone */
+    .decorations {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    /* Stars in space zone */
+    .star-deco { position: absolute; font-size: 20px; animation: twinkle 2s infinite; }
+    @keyframes twinkle { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
+    /* The winding path SVG */
+    .path-svg {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+    }
+    .path-line {
+      fill: none;
+      stroke: rgba(255,255,255,0.6);
+      stroke-width: 20;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .path-line-inner {
+      fill: none;
+      stroke: #f5deb3;
+      stroke-width: 12;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 15 10;
+    }
+
+    /* Level nodes positioned along the path */
+    .level-node {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: white;
+      border: 4px solid #4CAF50;
+      font-family: 'Fredoka One', cursive;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      z-index: 5;
+    }
+    .level-node:hover:not(.locked) {
+      transform: scale(1.2);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    }
+    .level-node.locked {
+      background: rgba(200,200,200,0.7);
+      border-color: #999;
+      color: #666;
+      cursor: not-allowed;
+    }
+    .level-node.current {
+      border-color: #FF6B35;
+      background: #FFF3E0;
+      animation: pulse 1.5s infinite;
+    }
+    .level-node.completed {
+      background: #E8F5E9;
+      border-color: #4CAF50;
+    }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 4px 10px rgba(0,0,0,0.3), 0 0 0 0 rgba(255,107,53,0.6); }
+      50% { box-shadow: 0 4px 10px rgba(0,0,0,0.3), 0 0 0 10px rgba(255,107,53,0); }
+    }
+
+    /* Land labels */
+    .land-label {
+      position: absolute;
+      font-family: 'Fredoka One', cursive;
+      font-size: 18px;
+      color: white;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+      background: rgba(0,0,0,0.3);
+      padding: 8px 16px;
+      border-radius: 20px;
+      z-index: 10;
+    }
+
+    /* Header */
+    .header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 15px 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(180deg, rgba(0,0,0,0.4) 0%, transparent 100%);
+      z-index: 20;
+    }
+    .btn-back {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.9);
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+    }
+    .title {
+      font-family: 'Fredoka One', cursive;
+      font-size: 28px;
+      color: white;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+    }
+    .btn-icon {
+      width: 45px;
+      height: 45px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.9);
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+    }
+
+    /* Mascot at current level */
+    .mascot {
+      position: absolute;
+      font-size: 40px;
+      z-index: 15;
+      animation: bounce-mascot 0.5s ease infinite;
+      filter: drop-shadow(0 5px 10px rgba(0,0,0,0.3));
+    }
+    @keyframes bounce-mascot {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    /* Milestone decorations */
+    .milestone {
+      position: absolute;
+      font-size: 60px;
+      z-index: 3;
+      filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3));
+    }
+
+    /* Zone decorations */
+    .zone-deco {
+      position: absolute;
+      font-size: 35px;
+      opacity: 0.7;
+      z-index: 2;
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <div class="sky"></div>
+
+    <!-- Decorations -->
+    <div class="decorations">
+      <!-- Space zone decorations -->
+      <span class="star-deco" style="top:5%;left:10%">⭐</span>
+      <span class="star-deco" style="top:8%;left:30%;animation-delay:0.5s">✨</span>
+      <span class="star-deco" style="top:3%;left:50%;animation-delay:1s">⭐</span>
+      <span class="star-deco" style="top:10%;left:70%;animation-delay:0.3s">🌟</span>
+      <span class="star-deco" style="top:5%;left:90%;animation-delay:0.7s">✨</span>
+
+      <!-- Zone decorations -->
+      <span class="zone-deco" style="top:88%;left:5%">🧀</span>
+      <span class="zone-deco" style="top:92%;left:92%">🏭</span>
+      <span class="zone-deco" style="top:72%;left:8%">🌻</span>
+      <span class="zone-deco" style="top:68%;left:88%">🌳</span>
+      <span class="zone-deco" style="top:52%;left:5%">🐠</span>
+      <span class="zone-deco" style="top:48%;left:90%">🐚</span>
+      <span class="zone-deco" style="top:32%;left:8%">🍬</span>
+      <span class="zone-deco" style="top:28%;left:88%">🍭</span>
+      <span class="zone-deco" style="top:12%;left:5%">🚀</span>
+      <span class="zone-deco" style="top:8%;left:85%">🛸</span>
+    </div>
+
+    <!-- Winding path -->
+    <svg class="path-svg" viewBox="0 0 1280 720" preserveAspectRatio="none">
+      <path class="path-line" d="
+        M 100,680
+        C 200,680 300,650 400,650
+        S 600,680 700,680
+        S 900,650 1000,650
+        S 1150,680 1180,620
+
+        C 1180,580 1100,560 1000,560
+        S 700,580 600,560
+        S 300,540 200,540
+        S 100,520 100,480
+
+        C 100,440 200,420 300,420
+        S 500,440 600,420
+        S 800,400 900,400
+        S 1100,420 1180,380
+
+        C 1180,340 1100,300 1000,300
+        S 700,320 600,300
+        S 300,280 200,280
+        S 100,260 100,220
+
+        C 100,180 200,160 300,160
+        S 500,180 600,160
+        S 800,140 900,140
+        S 1100,160 1180,120
+      "/>
+      <path class="path-line-inner" d="
+        M 100,680
+        C 200,680 300,650 400,650
+        S 600,680 700,680
+        S 900,650 1000,650
+        S 1150,680 1180,620
+
+        C 1180,580 1100,560 1000,560
+        S 700,580 600,560
+        S 300,540 200,540
+        S 100,520 100,480
+
+        C 100,440 200,420 300,420
+        S 500,440 600,420
+        S 800,400 900,400
+        S 1100,420 1180,380
+
+        C 1180,340 1100,300 1000,300
+        S 700,320 600,300
+        S 300,280 200,280
+        S 100,260 100,220
+
+        C 100,180 200,160 300,160
+        S 500,180 600,160
+        S 800,140 900,140
+        S 1100,160 1180,120
+      "/>
+    </svg>
+
+    <!-- Land labels -->
+    <div class="land-label" style="bottom:20px;left:50%;transform:translateX(-50%)">🧀 Cheese Factory</div>
+    <div class="land-label" style="bottom:170px;right:20px">🌿 Green Garden</div>
+    <div class="land-label" style="bottom:320px;left:20px">🌊 Blue Ocean</div>
+    <div class="land-label" style="bottom:450px;right:20px">🍬 Candy Land</div>
+    <div class="land-label" style="top:60px;left:50%;transform:translateX(-50%)">🚀 Space Adventure</div>
+
+    <!-- Header -->
+    <div class="header">
+      <button class="btn-back">←</button>
+      <h1 class="title">🗺️ Kaka's Treasure Map</h1>
+      <div class="controls">
+        <button class="btn-icon">⛶</button>
+        <button class="btn-icon">🔊</button>
+      </div>
+    </div>
+
+    <!-- Level nodes - Land 1: Cheese Factory (bottom) -->
+    <div class="level-node completed" style="left:75px;top:655px">1</div>
+    <div class="level-node completed" style="left:175px;top:640px">2</div>
+    <div class="level-node current" style="left:290px;top:625px">3</div>
+    <div class="level-node locked" style="left:400px;top:630px">4</div>
+    <div class="level-node locked" style="left:510px;top:650px">5</div>
+    <div class="level-node locked" style="left:620px;top:660px">6</div>
+    <div class="level-node locked" style="left:730px;top:655px">7</div>
+    <div class="level-node locked" style="left:840px;top:640px">8</div>
+    <div class="level-node locked" style="left:950px;top:625px">9</div>
+    <div class="level-node locked" style="left:1060px;top:635px">10</div>
+
+    <!-- Level nodes - Land 2: Green Garden -->
+    <div class="level-node locked" style="left:1130px;top:575px">11</div>
+    <div class="level-node locked" style="left:1030px;top:540px">12</div>
+    <div class="level-node locked" style="left:900px;top:545px">13</div>
+    <div class="level-node locked" style="left:770px;top:555px">14</div>
+    <div class="level-node locked" style="left:640px;top:545px">15</div>
+    <div class="level-node locked" style="left:510px;top:535px">16</div>
+    <div class="level-node locked" style="left:380px;top:525px">17</div>
+    <div class="level-node locked" style="left:260px;top:515px">18</div>
+    <div class="level-node locked" style="left:150px;top:500px">19</div>
+    <div class="level-node locked" style="left:75px;top:460px">20</div>
+
+    <!-- Level nodes - Land 3: Blue Ocean -->
+    <div class="level-node locked" style="left:130px;top:410px">21</div>
+    <div class="level-node locked" style="left:230px;top:400px">22</div>
+    <div class="level-node locked" style="left:340px;top:410px">23</div>
+    <div class="level-node locked" style="left:450px;top:415px">24</div>
+    <div class="level-node locked" style="left:560px;top:405px">25</div>
+    <div class="level-node locked" style="left:670px;top:395px">26</div>
+    <div class="level-node locked" style="left:780px;top:385px">27</div>
+    <div class="level-node locked" style="left:890px;top:390px">28</div>
+    <div class="level-node locked" style="left:1000px;top:400px">29</div>
+    <div class="level-node locked" style="left:1130px;top:370px">30</div>
+
+    <!-- Level nodes - Land 4: Candy Land -->
+    <div class="level-node locked" style="left:1080px;top:310px">31</div>
+    <div class="level-node locked" style="left:960px;top:295px">32</div>
+    <div class="level-node locked" style="left:840px;top:300px">33</div>
+    <div class="level-node locked" style="left:720px;top:305px">34</div>
+    <div class="level-node locked" style="left:600px;top:295px">35</div>
+    <div class="level-node locked" style="left:480px;top:285px">36</div>
+    <div class="level-node locked" style="left:360px;top:275px">37</div>
+    <div class="level-node locked" style="left:250px;top:265px">38</div>
+    <div class="level-node locked" style="left:150px;top:250px">39</div>
+    <div class="level-node locked" style="left:75px;top:205px">40</div>
+
+    <!-- Level nodes - Land 5: Space Adventure (top) -->
+    <div class="level-node locked" style="left:150px;top:165px">41</div>
+    <div class="level-node locked" style="left:260px;top:155px">42</div>
+    <div class="level-node locked" style="left:380px;top:165px">43</div>
+    <div class="level-node locked" style="left:500px;top:170px">44</div>
+    <div class="level-node locked" style="left:620px;top:160px">45</div>
+    <div class="level-node locked" style="left:740px;top:150px">46</div>
+    <div class="level-node locked" style="left:860px;top:140px">47</div>
+    <div class="level-node locked" style="left:970px;top:145px">48</div>
+    <div class="level-node locked" style="left:1080px;top:150px">49</div>
+    <div class="level-node locked" style="left:1155px;top:115px">50</div>
+
+    <!-- Mascot at current level -->
+    <div class="mascot" style="left:275px;top:580px">🐭</div>
+
+    <!-- Milestone decorations at end of each land -->
+    <span class="milestone" style="left:1100px;top:580px">🏆</span>
+  </div>
+</body>
+</html>

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kaka's Adventure - Level 1 Gameplay Wireframe</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: #1a1a2e;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .game-container {
+      width: 1280px;
+      height: 720px;
+      background: linear-gradient(180deg, #FFD93D 0%, #FF9F1C 100%);
+      border-radius: 24px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .cheese-pattern {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background-image: radial-gradient(circle, rgba(255,255,255,0.2) 15px, transparent 15px);
+      background-size: 60px 60px;
+    }
+    .header {
+      position: relative;
+      z-index: 1;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .level-info {
+      font-family: 'Fredoka One', cursive;
+      font-size: 24px;
+      color: #6C4E31;
+      background: rgba(255,255,255,0.9);
+      padding: 8px 20px;
+      border-radius: 20px;
+    }
+    .progress-bar {
+      width: 300px;
+      height: 20px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      width: 30%;
+      height: 100%;
+      background: linear-gradient(90deg, #4CAF50, #8BC34A);
+      border-radius: 10px;
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+    }
+    .btn-icon {
+      width: 45px;
+      height: 45px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.9);
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 3px 0 rgba(0,0,0,0.2);
+    }
+    .game-area {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    .instruction {
+      font-size: 28px;
+      color: #6C4E31;
+      margin-bottom: 10px;
+    }
+    .target-letter {
+      font-family: 'Fredoka One', cursive;
+      font-size: 200px;
+      color: #6C4E31;
+      text-shadow: 8px 8px 0 rgba(0,0,0,0.1);
+      animation: bounce 0.5s ease infinite;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    .mascot-area {
+      position: absolute;
+      left: 50px;
+      top: 200px;
+    }
+    .mascot {
+      font-size: 120px;
+      animation: sway 2s ease-in-out infinite;
+    }
+    @keyframes sway {
+      0%, 100% { transform: rotate(-5deg); }
+      50% { transform: rotate(5deg); }
+    }
+    .speech-bubble {
+      position: absolute;
+      top: -60px;
+      left: 100px;
+      background: white;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 18px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    .speech-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 20px;
+      border: 10px solid transparent;
+      border-top-color: white;
+    }
+    .keyboard {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255,255,255,0.95);
+      padding: 15px;
+      border-radius: 16px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+    }
+    .keyboard-row {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+    .key {
+      width: 50px;
+      height: 50px;
+      border-radius: 8px;
+      background: #f0f0f0;
+      border: 2px solid #ddd;
+      font-family: 'Fredoka One', cursive;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 0 #ccc;
+    }
+    .key.active {
+      background: #4CAF50;
+      color: white;
+      border-color: #388E3C;
+      box-shadow: 0 4px 0 #2E7D32, 0 0 20px rgba(76,175,80,0.5);
+      animation: pulse-key 0.8s ease infinite;
+    }
+    @keyframes pulse-key {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+    .key.finger-pinky { border-bottom: 4px solid #FF6B6B; }
+    .key.finger-ring { border-bottom: 4px solid #4ECDC4; }
+    .key.finger-middle { border-bottom: 4px solid #45B7D1; }
+    .key.finger-index { border-bottom: 4px solid #96CEB4; }
+    .finger-guide {
+      position: absolute;
+      bottom: 200px;
+      right: 50px;
+      background: rgba(255,255,255,0.95);
+      padding: 15px;
+      border-radius: 12px;
+      font-size: 14px;
+    }
+    .finger-guide h4 {
+      margin-bottom: 10px;
+      font-family: 'Fredoka One', cursive;
+    }
+    .finger-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 5px;
+    }
+    .finger-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <div class="cheese-pattern"></div>
+
+    <div class="header">
+      <span class="level-info">🧀 Level 1</span>
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+      <div class="controls">
+        <button class="btn-icon">⏸</button>
+        <button class="btn-icon">🔊</button>
+        <button class="btn-icon">⛶</button>
+      </div>
+    </div>
+
+    <div class="mascot-area">
+      <div class="speech-bubble">Type the letter!</div>
+      <div class="mascot">🐭</div>
+    </div>
+
+    <div class="game-area">
+      <p class="instruction">Press the key:</p>
+      <div class="target-letter">F</div>
+    </div>
+
+    <div class="finger-guide">
+      <h4>👆 Finger Guide</h4>
+      <div class="finger-item"><span class="finger-dot" style="background:#FF6B6B"></span> Pinky</div>
+      <div class="finger-item"><span class="finger-dot" style="background:#4ECDC4"></span> Ring</div>
+      <div class="finger-item"><span class="finger-dot" style="background:#45B7D1"></span> Middle</div>
+      <div class="finger-item"><span class="finger-dot" style="background:#96CEB4"></span> Index</div>
+    </div>
+
+    <div class="keyboard">
+      <div class="keyboard-row">
+        <div class="key finger-pinky">Q</div>
+        <div class="key finger-ring">W</div>
+        <div class="key finger-middle">E</div>
+        <div class="key finger-index">R</div>
+        <div class="key finger-index">T</div>
+        <div class="key finger-index">Y</div>
+        <div class="key finger-index">U</div>
+        <div class="key finger-middle">I</div>
+        <div class="key finger-ring">O</div>
+        <div class="key finger-pinky">P</div>
+      </div>
+      <div class="keyboard-row">
+        <div class="key finger-pinky">A</div>
+        <div class="key finger-ring">S</div>
+        <div class="key finger-middle">D</div>
+        <div class="key finger-index active">F</div>
+        <div class="key finger-index">G</div>
+        <div class="key finger-index">H</div>
+        <div class="key finger-index">J</div>
+        <div class="key finger-middle">K</div>
+        <div class="key finger-ring">L</div>
+        <div class="key finger-pinky">;</div>
+      </div>
+      <div class="keyboard-row">
+        <div class="key finger-pinky">Z</div>
+        <div class="key finger-ring">X</div>
+        <div class="key finger-middle">C</div>
+        <div class="key finger-index">V</div>
+        <div class="key finger-index">B</div>
+        <div class="key finger-index">N</div>
+        <div class="key finger-index">M</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

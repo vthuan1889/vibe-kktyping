@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kaka's Adventure - Summary Wireframe</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: #1a1a2e;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .game-container {
+      width: 1280px;
+      height: 720px;
+      background: linear-gradient(180deg, #FFD93D 0%, #FF9F1C 100%);
+      border-radius: 24px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .confetti {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background-image:
+        radial-gradient(circle, #FF6B6B 8px, transparent 8px),
+        radial-gradient(circle, #4ECDC4 6px, transparent 6px),
+        radial-gradient(circle, #45B7D1 10px, transparent 10px),
+        radial-gradient(circle, #96CEB4 7px, transparent 7px),
+        radial-gradient(circle, #FFEAA7 9px, transparent 9px);
+      background-size: 150px 150px, 100px 100px, 200px 200px, 120px 120px, 180px 180px;
+      background-position: 0 0, 50px 50px, 100px 20px, 30px 80px, 150px 100px;
+      animation: confetti-fall 3s linear infinite;
+      opacity: 0.6;
+    }
+    @keyframes confetti-fall {
+      0% { background-position: 0 0, 50px 50px, 100px 20px, 30px 80px, 150px 100px; }
+      100% { background-position: 0 720px, 50px 770px, 100px 740px, 30px 800px, 150px 820px; }
+    }
+    .summary-card {
+      position: relative;
+      z-index: 1;
+      background: white;
+      border-radius: 30px;
+      padding: 50px 80px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .title {
+      font-family: 'Fredoka One', cursive;
+      font-size: 48px;
+      color: #FF6B35;
+      margin-bottom: 10px;
+    }
+    .subtitle {
+      font-size: 24px;
+      color: #666;
+      margin-bottom: 30px;
+    }
+    .mascot {
+      font-size: 100px;
+      margin: 20px 0;
+      animation: bounce 0.5s ease infinite;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      25% { transform: translateY(-20px) rotate(-10deg); }
+      75% { transform: translateY(-20px) rotate(10deg); }
+    }
+    .stars-container {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 30px 0;
+    }
+    .star {
+      font-size: 50px;
+      animation: star-pop 0.3s ease forwards;
+      opacity: 0;
+      transform: scale(0);
+    }
+    .star:nth-child(1) { animation-delay: 0.1s; }
+    .star:nth-child(2) { animation-delay: 0.2s; }
+    .star:nth-child(3) { animation-delay: 0.3s; }
+    .star:nth-child(4) { animation-delay: 0.4s; }
+    .star:nth-child(5) { animation-delay: 0.5s; }
+    .star:nth-child(6) { animation-delay: 0.6s; }
+    .star:nth-child(7) { animation-delay: 0.7s; }
+    .star:nth-child(8) { animation-delay: 0.8s; }
+    .star:nth-child(9) { animation-delay: 0.9s; }
+    .star:nth-child(10) { animation-delay: 1.0s; }
+    @keyframes star-pop {
+      0% { opacity: 0; transform: scale(0) rotate(-180deg); }
+      50% { transform: scale(1.3) rotate(10deg); }
+      100% { opacity: 1; transform: scale(1) rotate(0deg); }
+    }
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin: 20px 0;
+    }
+    .stat {
+      text-align: center;
+    }
+    .stat-value {
+      font-family: 'Fredoka One', cursive;
+      font-size: 36px;
+      color: #4CAF50;
+    }
+    .stat-label {
+      font-size: 16px;
+      color: #999;
+    }
+    .buttons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 30px;
+    }
+    .btn {
+      font-family: 'Fredoka One', cursive;
+      font-size: 24px;
+      padding: 15px 40px;
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.1s;
+    }
+    .btn-primary {
+      background: #FF6B35;
+      color: white;
+      box-shadow: 0 5px 0 #C74B1A;
+    }
+    .btn-secondary {
+      background: #E0E0E0;
+      color: #666;
+      box-shadow: 0 5px 0 #BDBDBD;
+    }
+    .btn:hover { transform: scale(1.05); }
+    .btn:active { transform: translateY(5px); box-shadow: none; }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <div class="confetti"></div>
+    <div class="summary-card">
+      <h1 class="title">🎉 Level Complete!</h1>
+      <p class="subtitle">You did amazing!</p>
+      <div class="mascot">🐭</div>
+      <div class="stars-container">
+        <span class="star">⭐</span>
+        <span class="star">⭐</span>
+        <span class="star">⭐</span>
+        <span class="star">⭐</span>
+        <span class="star">⭐</span>
+        <span class="star">⭐</span>
+        <span class="star">⭐</span>
+        <span class="star">⭐</span>
+        <span class="star">⭐</span>
+        <span class="star">⭐</span>
+      </div>
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-value">8</div>
+          <div class="stat-label">Letters Typed</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">100%</div>
+          <div class="stat-label">Accuracy</div>
+        </div>
+      </div>
+      <div class="buttons">
+        <button class="btn btn-secondary">🗺️ Map</button>
+        <button class="btn btn-primary">Next Level ➡️</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
