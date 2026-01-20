@@ -2,18 +2,66 @@ import Phaser from 'phaser';
 import { StorageManager } from './storage-manager';
 
 /**
- * Manages audio playback for the game
+ * Manages audio playback for the game including TTS voice
  */
 export class AudioManager {
   private scene: Phaser.Scene;
   private bgMusic: Phaser.Sound.BaseSound | null = null;
   private soundEnabled: boolean;
   private musicEnabled: boolean;
+  private synth: SpeechSynthesis | null = null;
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
     this.soundEnabled = StorageManager.getSoundEnabled();
     this.musicEnabled = StorageManager.getMusicEnabled();
+
+    // Initialize speech synthesis if available
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      this.synth = window.speechSynthesis;
+    }
+  }
+
+  // Speak text using browser TTS
+  speak(text: string, rate: number = 0.8): void {
+    if (!this.soundEnabled || !this.synth) return;
+
+    // Cancel any ongoing speech
+    this.synth.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = rate;
+    utterance.pitch = 1.2; // Slightly higher pitch for kid-friendly voice
+    utterance.volume = 1;
+    utterance.lang = 'en-US';
+
+    this.synth.speak(utterance);
+  }
+
+  // Speak letter for typing guidance
+  speakLetter(letter: string): void {
+    if (!this.soundEnabled || !this.synth) return;
+
+    // Handle special characters
+    const letterText = letter === ';' ? 'semicolon' : letter.toUpperCase();
+    this.speak(`Type ${letterText}`, 0.9);
+  }
+
+  // Speak encouragement phrases
+  speakEncouragement(): void {
+    if (!this.soundEnabled || !this.synth) return;
+
+    const phrases = ['Great job!', 'Awesome!', 'Well done!', 'Perfect!', 'Excellent!'];
+    const phrase = phrases[Math.floor(Math.random() * phrases.length)];
+    this.speak(phrase, 0.9);
+  }
+
+  // Speak correct letter after typing
+  speakCorrect(letter: string): void {
+    if (!this.soundEnabled || !this.synth) return;
+
+    const letterText = letter === ';' ? 'semicolon' : letter.toUpperCase();
+    this.speak(letterText, 0.9);
   }
 
   // Play sound effect

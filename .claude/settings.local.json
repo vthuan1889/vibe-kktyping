@@ -21,7 +21,13 @@
       "Bash(timeout:*)",
       "Bash(git add:*)",
       "Read(//d/Code-Tool/Vibe/vibe-kktyping/**)",
-      "Bash(awk:*)"
+      "Bash(awk:*)",
+      "Bash(where:*)",
+      "Bash(ffmpeg:*)",
+      "Bash(taskkill:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: add audio, voice guidance, and GitHub Pages deployment\n\n- Add 5 royalty-free BGM tracks for each land theme\n- Integrate Web Speech API for TTS voice guidance\n- Add sound effects \\(correct, wrong, click, complete\\)\n- Add smooth scene transitions with fade effects\n- Create GitHub Actions workflow for auto-deploy on tag push\n- Update vite.config for GitHub Pages base path\nEOF\n\\)\")"
     ]
   }
 }

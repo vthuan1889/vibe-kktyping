@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
-import { SCENES, GAME_WIDTH, GAME_HEIGHT, COLORS } from '../config/constants';
+import { SCENES, GAME_WIDTH, GAME_HEIGHT, COLORS, AUDIO, TRANSITION } from '../config/constants';
 import { getLandByLevel } from '../data/lands-config';
+import { getLevelConfig, LevelConfig } from '../data/level-data';
+import { AudioManager } from '../utils/audio-manager';
 
 /**
  * SummaryScene - Level completion screen with stars
@@ -9,6 +11,8 @@ export class SummaryScene extends Phaser.Scene {
   private level = 1;
   private stars = 10;
   private mistakes = 0;
+  private audio!: AudioManager;
+  private levelConfig!: LevelConfig;
 
   constructor() {
     super({ key: SCENES.SUMMARY });
@@ -18,10 +22,17 @@ export class SummaryScene extends Phaser.Scene {
     this.level = data.level || 1;
     this.stars = data.stars || 10;
     this.mistakes = data.mistakes || 0;
+    this.levelConfig = getLevelConfig(this.level);
   }
 
   create(): void {
     const land = getLandByLevel(this.level);
+
+    // Initialize audio
+    this.audio = new AudioManager(this);
+
+    // Fade in transition
+    this.cameras.main.fadeIn(TRANSITION.FADE_IN, 0, 0, 0);
 
     this.createBackground(land.primary, land.secondary);
     this.createConfetti();
@@ -132,10 +143,6 @@ export class SummaryScene extends Phaser.Scene {
     }).setOrigin(0.5);
   }
 
-  private get levelConfig() {
-    return { content: ['F', 'J', 'D', 'K', 'S', 'L', 'A', ';'] }; // Simplified
-  }
-
   private createStars(centerX: number, y: number): void {
     const starCount = Math.min(this.stars, 10);
     const totalWidth = starCount * 45;
@@ -164,13 +171,19 @@ export class SummaryScene extends Phaser.Scene {
 
     // Map button
     this.createButton(centerX - 120, buttonY, '🗺️ Map', 0xe0e0e0, 0xbdbdbd, () => {
-      this.scene.start(SCENES.TREASURE_MAP);
+      this.cameras.main.fadeOut(TRANSITION.FADE_OUT, 0, 0, 0);
+      this.cameras.main.once('camerafadeoutcomplete', () => {
+        this.scene.start(SCENES.TREASURE_MAP);
+      });
     });
 
     // Next Level button
     if (this.level < 50) {
       this.createButton(centerX + 80, buttonY, 'Next ➡️', COLORS.BUTTON_PRIMARY, 0xc74b1a, () => {
-        this.scene.start(SCENES.GAME, { level: this.level + 1 });
+        this.cameras.main.fadeOut(TRANSITION.FADE_OUT, 0, 0, 0);
+        this.cameras.main.once('camerafadeoutcomplete', () => {
+          this.scene.start(SCENES.GAME, { level: this.level + 1 });
+        });
       });
     }
   }
@@ -212,6 +225,7 @@ export class SummaryScene extends Phaser.Scene {
     hitArea.on('pointerup', () => {
       bg.y = 0;
       shadow.setAlpha(1);
+      this.audio.playSfx(AUDIO.SFX.CLICK);
       onClick();
     });
 

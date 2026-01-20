@@ -17,11 +17,11 @@
 
 | # | Phase | Status | File |
 |---|-------|--------|------|
-| 1 | Project Setup | Pending | [phase-01-project-setup.md](phase-01-project-setup.md) |
-| 2 | Game Skeleton | Pending | [phase-02-game-skeleton.md](phase-02-game-skeleton.md) |
-| 3 | Treasure Map | Pending | [phase-03-treasure-map.md](phase-03-treasure-map.md) |
-| 4 | Level 1 Gameplay | Pending | [phase-04-level-1-gameplay.md](phase-04-level-1-gameplay.md) |
-| 5 | Audio & Polish | Pending | [phase-05-audio-polish.md](phase-05-audio-polish.md) |
+| 1 | Project Setup | ✅ Done | [phase-01-project-setup.md](phase-01-project-setup.md) |
+| 2 | Game Skeleton | ✅ Done | [phase-02-game-skeleton.md](phase-02-game-skeleton.md) |
+| 3 | Treasure Map | ✅ Done | [phase-03-treasure-map.md](phase-03-treasure-map.md) |
+| 4 | Level 1 Gameplay | ✅ Done | [phase-04-level-1-gameplay.md](phase-04-level-1-gameplay.md) |
+| 5 | Audio & Polish | ✅ Done | [phase-05-audio-polish.md](phase-05-audio-polish.md) |
 
 ## Key Dependencies
 
@@ -31,8 +31,8 @@
 
 ## Success Criteria
 
-- [ ] Game loads and shows menu
-- [ ] Treasure Map displays 50 level buttons
-- [ ] Level 1 playable with keyboard input
-- [ ] Progress saves to LocalStorage
+- [x] Game loads and shows menu
+- [x] Treasure Map displays 50 level buttons
+- [x] Level 1 playable with keyboard input
+- [x] Progress saves to LocalStorage
 - [ ] Deploys to GitHub Pages

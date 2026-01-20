@@ -1,8 +1,9 @@
 import Phaser from 'phaser';
-import { SCENES, GAME_WIDTH, GAME_HEIGHT, COLORS, FINGER_COLORS } from '../config/constants';
+import { SCENES, GAME_WIDTH, GAME_HEIGHT, COLORS, FINGER_COLORS, AUDIO, TRANSITION } from '../config/constants';
 import { getLevelConfig, LevelConfig } from '../data/level-data';
 import { getLandByLevel } from '../data/lands-config';
 import { StorageManager } from '../utils/storage-manager';
+import { AudioManager } from '../utils/audio-manager';
 
 /**
  * GameScene - Main typing gameplay
@@ -18,6 +19,7 @@ export class GameScene extends Phaser.Scene {
   private keyboardKeys: Map<string, Phaser.GameObjects.Container> = new Map();
   private mascot!: Phaser.GameObjects.Text;
   private isShaking = false; // Prevent multiple shake animations
+  private audio!: AudioManager;
 
   constructor() {
     super({ key: SCENES.GAME });
@@ -33,12 +35,24 @@ export class GameScene extends Phaser.Scene {
     this.levelConfig = getLevelConfig(this.level);
     const land = getLandByLevel(this.level);
 
+    // Initialize audio
+    this.audio = new AudioManager(this);
+    this.audio.playMusic(land.bgm);
+
+    // Fade in transition
+    this.cameras.main.fadeIn(TRANSITION.FADE_IN, 0, 0, 0);
+
     this.createBackground(land.primary, land.secondary);
     this.createHeader();
     this.createMascot();
     this.createTargetLetter();
     this.createVirtualKeyboard();
     this.highlightCurrentKey();
+
+    // Speak first letter after scene fades in
+    this.cameras.main.once('camerafadeincomplete', () => {
+      this.audio.speakLetter(this.getCurrentTarget());
+    });
 
     // Setup keyboard input
     this.input.keyboard?.on('keydown', this.handleKeyPress, this);
@@ -82,9 +96,16 @@ export class GameScene extends Phaser.Scene {
 
     // Control buttons
     this.createControlButton(GAME_WIDTH - 140, 35, '⏸', () => {
-      this.scene.start(SCENES.TREASURE_MAP);
+      this.audio.stopMusic();
+      this.cameras.main.fadeOut(TRANSITION.FADE_OUT, 0, 0, 0);
+      this.cameras.main.once('camerafadeoutcomplete', () => {
+        this.scene.start(SCENES.TREASURE_MAP);
+      });
     });
-    this.createControlButton(GAME_WIDTH - 90, 35, '🔊', () => {});
+    const soundBtn = this.createControlButton(GAME_WIDTH - 90, 35, this.audio.isSoundEnabled() ? '🔊' : '🔇', () => {
+      const enabled = this.audio.toggleSound();
+      soundBtn.setText(enabled ? '🔊' : '🔇');
+    });
     this.createControlButton(GAME_WIDTH - 40, 35, '⛶', () => {
       if (this.scale.isFullscreen) {
         this.scale.stopFullscreen();
@@ -94,16 +115,45 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
-  private createControlButton(x: number, y: number, icon: string, onClick: () => void): void {
+  private createControlButton(x: number, y: number, icon: string, onClick: () => void): Phaser.GameObjects.Text {
+    // Container for proper scaling from center
+    const container = this.add.container(x, y);
+
+    // Button background (dark semi-transparent)
     const bg = this.add.graphics();
-    bg.fillStyle(0xffffff, 0.9);
-    bg.fillRoundedRect(x - 20, y - 20, 40, 40, 10);
+    bg.fillStyle(0x333333, 0.8);
+    bg.fillRoundedRect(-22, -22, 44, 44, 10);
 
-    this.add.text(x, y, icon, { fontSize: '18px' }).setOrigin(0.5);
+    // Icon with shadow
+    const iconText = this.add.text(0, 0, icon, {
+      fontSize: '22px',
+    }).setOrigin(0.5).setShadow(1, 1, '#000000', 2);
 
-    const hitArea = this.add.rectangle(x, y, 40, 40, 0x000000, 0);
+    container.add([bg, iconText]);
+
+    // Hit area
+    const hitArea = this.add.rectangle(x, y, 44, 44, 0x000000, 0);
     hitArea.setInteractive({ useHandCursor: true });
+
+    hitArea.on('pointerover', () => {
+      this.tweens.add({
+        targets: container,
+        scale: 1.1,
+        duration: 100,
+      });
+    });
+
+    hitArea.on('pointerout', () => {
+      this.tweens.add({
+        targets: container,
+        scale: 1,
+        duration: 100,
+      });
+    });
+
     hitArea.on('pointerup', onClick);
+
+    return iconText;
   }
 
   private createMascot(): void {
@@ -137,7 +187,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private createTargetLetter(): void {
-    const centerX = GAME_WIDTH / 2 + 100;
+    const centerX = GAME_WIDTH / 2;
     const centerY = 220;
 
     // Instruction
@@ -308,6 +358,8 @@ export class GameScene extends Phaser.Scene {
   }
 
   private handleCorrectKey(): void {
+    this.audio.playSfx(AUDIO.SFX.CORRECT);
+
     // Success animation on target letter
     this.tweens.add({
       targets: this.targetText,
@@ -319,10 +371,15 @@ export class GameScene extends Phaser.Scene {
         this.updateProgressBar();
 
         if (this.currentIndex >= this.levelConfig.content.length) {
+          this.audio.speakEncouragement();
           this.completeLevel();
         } else {
           this.targetText.setText(this.getCurrentTarget());
           this.highlightCurrentKey();
+          // Speak next letter after a short delay
+          this.time.delayedCall(300, () => {
+            this.audio.speakLetter(this.getCurrentTarget());
+          });
         }
       },
     });
@@ -338,6 +395,7 @@ export class GameScene extends Phaser.Scene {
 
   private handleWrongKey(): void {
     this.mistakes++;
+    this.audio.playSfx(AUDIO.SFX.WRONG);
 
     // Prevent multiple shake animations from stacking
     if (this.isShaking) return;
@@ -385,6 +443,9 @@ export class GameScene extends Phaser.Scene {
   }
 
   private completeLevel(): void {
+    this.audio.playSfx(AUDIO.SFX.COMPLETE);
+    this.audio.stopMusic();
+
     // Calculate stars
     let stars = 10;
 
@@ -407,10 +468,13 @@ export class GameScene extends Phaser.Scene {
     }
 
     // Go to summary
-    this.scene.start(SCENES.SUMMARY, {
-      level: this.level,
-      stars,
-      mistakes: this.mistakes,
+    this.cameras.main.fadeOut(TRANSITION.FADE_OUT, 0, 0, 0);
+    this.cameras.main.once('camerafadeoutcomplete', () => {
+      this.scene.start(SCENES.SUMMARY, {
+        level: this.level,
+        stars,
+        mistakes: this.mistakes,
+      });
     });
   }
 }

@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { SCENES, GAME_WIDTH, GAME_HEIGHT, COLORS } from '../config/constants';
+import { SCENES, GAME_WIDTH, GAME_HEIGHT, COLORS, AUDIO } from '../config/constants';
 
 /**
  * PreloadScene - Loads all game assets with progress bar
@@ -12,14 +12,16 @@ export class PreloadScene extends Phaser.Scene {
   preload(): void {
     this.createLoadingBar();
 
-    // TODO: Load actual assets when available
-    // this.load.image('logo', 'assets/images/logo.png');
-    // this.load.audio('bgm', 'assets/audio/bgm.mp3');
-
-    // Simulate loading for now
-    for (let i = 0; i < 10; i++) {
-      this.load.image(`placeholder-${i}`, 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==');
-    }
+    // Load audio assets
+    this.load.audio(AUDIO.SFX.CORRECT, 'assets/audio/sfx/correct.mp3');
+    this.load.audio(AUDIO.SFX.WRONG, 'assets/audio/sfx/wrong.mp3');
+    this.load.audio(AUDIO.SFX.CLICK, 'assets/audio/sfx/click.mp3');
+    this.load.audio(AUDIO.SFX.COMPLETE, 'assets/audio/sfx/complete.mp3');
+    this.load.audio(AUDIO.BGM.CHEESE_FACTORY, 'assets/audio/bgm/cheese-factory.ogg');
+    this.load.audio(AUDIO.BGM.GREEN_GARDEN, 'assets/audio/bgm/green-garden.ogg');
+    this.load.audio(AUDIO.BGM.BLUE_OCEAN, 'assets/audio/bgm/blue-ocean.ogg');
+    this.load.audio(AUDIO.BGM.CANDY_LAND, 'assets/audio/bgm/candy-land.ogg');
+    this.load.audio(AUDIO.BGM.SPACE, 'assets/audio/bgm/space.mp3');
   }
 
   private createLoadingBar(): void {

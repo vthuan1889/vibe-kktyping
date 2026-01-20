@@ -1,4 +1,4 @@
-import { COLORS } from '../config/constants';
+import { COLORS, AUDIO } from '../config/constants';
 
 export interface LandConfig {
   id: number;
@@ -10,6 +10,7 @@ export interface LandConfig {
   secondary: number;
   accent: number;
   content: 'letters' | 'words-short' | 'words-medium' | 'words-long' | 'words-science';
+  bgm: string;
 }
 
 export const LANDS_CONFIG: LandConfig[] = [
@@ -23,6 +24,7 @@ export const LANDS_CONFIG: LandConfig[] = [
     secondary: COLORS.CHEESE_FACTORY.secondary,
     accent: COLORS.CHEESE_FACTORY.accent,
     content: 'letters',
+    bgm: AUDIO.BGM.CHEESE_FACTORY,
   },
   {
     id: 2,
@@ -34,6 +36,7 @@ export const LANDS_CONFIG: LandConfig[] = [
     secondary: COLORS.GREEN_GARDEN.secondary,
     accent: COLORS.GREEN_GARDEN.accent,
     content: 'words-short',
+    bgm: AUDIO.BGM.GREEN_GARDEN,
   },
   {
     id: 3,
@@ -45,6 +48,7 @@ export const LANDS_CONFIG: LandConfig[] = [
     secondary: COLORS.BLUE_OCEAN.secondary,
     accent: COLORS.BLUE_OCEAN.accent,
     content: 'words-medium',
+    bgm: AUDIO.BGM.BLUE_OCEAN,
   },
   {
     id: 4,
@@ -56,6 +60,7 @@ export const LANDS_CONFIG: LandConfig[] = [
     secondary: COLORS.CANDY_LAND.secondary,
     accent: COLORS.CANDY_LAND.accent,
     content: 'words-long',
+    bgm: AUDIO.BGM.CANDY_LAND,
   },
   {
     id: 5,
@@ -67,6 +72,7 @@ export const LANDS_CONFIG: LandConfig[] = [
     secondary: COLORS.SPACE.secondary,
     accent: COLORS.SPACE.accent,
     content: 'words-science',
+    bgm: AUDIO.BGM.SPACE,
   },
 ];
 

@@ -1,12 +1,14 @@
 import Phaser from 'phaser';
-import { SCENES, GAME_WIDTH, GAME_HEIGHT, COLORS } from '../config/constants';
+import { SCENES, GAME_WIDTH, GAME_HEIGHT, COLORS, AUDIO, TRANSITION } from '../config/constants';
 import { StorageManager } from '../utils/storage-manager';
+import { AudioManager } from '../utils/audio-manager';
 
 /**
  * MenuScene - Main menu with Play button and controls
  */
 export class MenuScene extends Phaser.Scene {
   private soundEnabled = true;
+  private audio!: AudioManager;
 
   constructor() {
     super({ key: SCENES.MENU });
@@ -14,6 +16,10 @@ export class MenuScene extends Phaser.Scene {
 
   create(): void {
     this.soundEnabled = StorageManager.getSoundEnabled();
+    this.audio = new AudioManager(this);
+
+    // Fade in transition
+    this.cameras.main.fadeIn(TRANSITION.FADE_IN, 0, 0, 0);
 
     this.createBackground();
     this.createTitle();
@@ -135,7 +141,11 @@ export class MenuScene extends Phaser.Scene {
     hitArea.on('pointerup', () => {
       buttonGraphics.setPosition(0, 0);
       shadowGraphics.setAlpha(1);
-      this.scene.start(SCENES.TREASURE_MAP);
+      this.audio.playSfx(AUDIO.SFX.CLICK);
+      this.cameras.main.fadeOut(TRANSITION.FADE_OUT, 0, 0, 0);
+      this.cameras.main.once('camerafadeoutcomplete', () => {
+        this.scene.start(SCENES.TREASURE_MAP);
+      });
     });
   }
 
@@ -161,25 +171,28 @@ export class MenuScene extends Phaser.Scene {
   }
 
   private createIconButton(x: number, y: number, icon: string, onClick: () => void): Phaser.GameObjects.Text {
-    // Button background
-    const bg = this.add.graphics();
-    bg.fillStyle(0xffffff, 0.9);
-    bg.fillRoundedRect(x - 25, y - 25, 50, 50, 12);
-    bg.lineStyle(2, 0x000000, 0.1);
-    bg.strokeRoundedRect(x - 25, y - 25, 50, 50, 12);
+    // Container to hold bg and icon for proper scaling from center
+    const container = this.add.container(x, y);
 
-    // Icon
-    const iconText = this.add.text(x, y, icon, {
-      fontSize: '24px',
-    }).setOrigin(0.5);
+    // Button background (dark semi-transparent for visibility on any background)
+    const bg = this.add.graphics();
+    bg.fillStyle(0x333333, 0.8);
+    bg.fillRoundedRect(-22, -22, 44, 44, 10);
+
+    // Icon with shadow for better visibility
+    const iconText = this.add.text(0, 0, icon, {
+      fontSize: '22px',
+    }).setOrigin(0.5).setShadow(1, 1, '#000000', 2);
+
+    container.add([bg, iconText]);
 
     // Hit area
-    const hitArea = this.add.rectangle(x, y, 50, 50, 0x000000, 0);
+    const hitArea = this.add.rectangle(x, y, 44, 44, 0x000000, 0);
     hitArea.setInteractive({ useHandCursor: true });
 
     hitArea.on('pointerover', () => {
       this.tweens.add({
-        targets: [bg, iconText],
+        targets: container,
         scale: 1.1,
         duration: 100,
       });
@@ -187,13 +200,16 @@ export class MenuScene extends Phaser.Scene {
 
     hitArea.on('pointerout', () => {
       this.tweens.add({
-        targets: [bg, iconText],
+        targets: container,
         scale: 1,
         duration: 100,
       });
     });
 
-    hitArea.on('pointerup', onClick);
+    hitArea.on('pointerup', () => {
+      this.audio.playSfx(AUDIO.SFX.CLICK);
+      onClick();
+    });
 
     return iconText;
   }

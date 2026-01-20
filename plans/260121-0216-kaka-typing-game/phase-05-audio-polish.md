@@ -3,7 +3,7 @@
 ## Overview
 
 - **Priority**: Medium
-- **Status**: Pending
+- **Status**: ✅ Done
 - **Description**: Add sound effects, music, and visual polish
 
 ## Requirements
@@ -50,28 +50,27 @@
 ```
 public/assets/audio/
 ├── bgm/
-│   └── cheese-factory.mp3
+│   ├── cheese-factory.ogg (Mushroom Dance - CC-BY 3.0)
+│   ├── green-garden.ogg (Feel Good Island - OGA-BY 3.0)
+│   ├── blue-ocean.ogg (Cute March - CC-BY-SA 3.0)
+│   ├── candy-land.ogg (Gunma-chan Gambol - CC-BY 4.0)
+│   └── space.mp3 (Happy Arcade Tune - CC-BY 3.0)
 ├── sfx/
 │   ├── correct.mp3
 │   ├── wrong.mp3
 │   ├── click.mp3
 │   └── complete.mp3
 └── voice/
-    ├── type-letter.mp3
-    ├── great-job.mp3
-    └── letters/
-        ├── a.mp3
-        ├── s.mp3
-        └── ...
+    └── (Using Web Speech API TTS instead of pre-recorded)
 ```
 
 ## Success Criteria
 
-- [ ] Background music plays
-- [ ] All SFX trigger correctly
-- [ ] Voice prompts work
-- [ ] Summary shows stars animation
-- [ ] Game feels polished and fun
+- [x] Background music plays (5 different tracks per land)
+- [x] All SFX trigger correctly
+- [x] Voice prompts work (via Web Speech API)
+- [x] Summary shows stars animation
+- [x] Game feels polished and fun
 
 ## Deployment
 

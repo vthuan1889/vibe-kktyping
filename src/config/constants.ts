@@ -53,3 +53,26 @@ export const FONTS = {
   HEADING: 'Fredoka One',
   BODY: 'Nunito',
 } as const;
+
+// Audio keys
+export const AUDIO = {
+  SFX: {
+    CORRECT: 'sfx-correct',
+    WRONG: 'sfx-wrong',
+    CLICK: 'sfx-click',
+    COMPLETE: 'sfx-complete',
+  },
+  BGM: {
+    CHEESE_FACTORY: 'bgm-cheese-factory',
+    GREEN_GARDEN: 'bgm-green-garden',
+    BLUE_OCEAN: 'bgm-blue-ocean',
+    CANDY_LAND: 'bgm-candy-land',
+    SPACE: 'bgm-space',
+  },
+} as const;
+
+// Scene transition timing
+export const TRANSITION = {
+  FADE_IN: 300,
+  FADE_OUT: 200,
+} as const;
