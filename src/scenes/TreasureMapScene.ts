@@ -383,12 +383,14 @@ export class TreasureMapScene extends Phaser.Scene {
       }
     });
 
-    this.createIconButton(GAME_WIDTH - 35, 35, '🔊', () => {
-      // Toggle sound
+    // Sound toggle button (toggles all audio including music)
+    const soundBtn = this.createIconButton(GAME_WIDTH - 35, 35, this.audio.isAllEnabled() ? '🔊' : '🔇', () => {
+      const enabled = this.audio.toggleAll();
+      soundBtn.setText(enabled ? '🔊' : '🔇');
     });
   }
 
-  private createIconButton(x: number, y: number, icon: string, onClick: () => void): void {
+  private createIconButton(x: number, y: number, icon: string, onClick: () => void): Phaser.GameObjects.Text {
     // Container for proper scaling from center
     const container = this.add.container(x, y);
 
@@ -425,6 +427,8 @@ export class TreasureMapScene extends Phaser.Scene {
     });
 
     hitArea.on('pointerup', onClick);
+
+    return iconText;
   }
 
   private createMascot(): void {

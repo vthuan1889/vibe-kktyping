@@ -30,7 +30,11 @@
       "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: add audio, voice guidance, and GitHub Pages deployment\n\n- Add 5 royalty-free BGM tracks for each land theme\n- Integrate Web Speech API for TTS voice guidance\n- Add sound effects \\(correct, wrong, click, complete\\)\n- Add smooth scene transitions with fade effects\n- Create GitHub Actions workflow for auto-deploy on tag push\n- Update vite.config for GitHub Pages base path\nEOF\n\\)\")",
       "Bash(git push:*)",
       "Bash(git tag:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(find:*)",
+      "Bash(repomix --output repomix-output.xml)",
+      "Bash(repomix.cmd:*)",
+      "Bash(wc:*)"
     ]
   }
 }

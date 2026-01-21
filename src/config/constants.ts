@@ -71,6 +71,11 @@ export const AUDIO = {
   },
 } as const;
 
+/**
+ * Get story audio key for a level
+ */
+export const getStoryAudioKey = (level: number): string => `story-level-${level}`;
+
 // Scene transition timing
 export const TRANSITION = {
   FADE_IN: 300,

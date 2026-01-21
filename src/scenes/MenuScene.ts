@@ -1,13 +1,11 @@
 import Phaser from 'phaser';
 import { SCENES, GAME_WIDTH, GAME_HEIGHT, COLORS, AUDIO, TRANSITION } from '../config/constants';
-import { StorageManager } from '../utils/storage-manager';
 import { AudioManager } from '../utils/audio-manager';
 
 /**
  * MenuScene - Main menu with Play button and controls
  */
 export class MenuScene extends Phaser.Scene {
-  private soundEnabled = true;
   private audio!: AudioManager;
 
   constructor() {
@@ -15,7 +13,6 @@ export class MenuScene extends Phaser.Scene {
   }
 
   create(): void {
-    this.soundEnabled = StorageManager.getSoundEnabled();
     this.audio = new AudioManager(this);
 
     // Fade in transition
@@ -162,11 +159,10 @@ export class MenuScene extends Phaser.Scene {
       }
     });
 
-    // Sound toggle button
-    const soundBtn = this.createIconButton(startX + 60, startY, this.soundEnabled ? '🔊' : '🔇', () => {
-      this.soundEnabled = !this.soundEnabled;
-      StorageManager.setSoundEnabled(this.soundEnabled);
-      soundBtn.setText(this.soundEnabled ? '🔊' : '🔇');
+    // Sound toggle button (toggles all audio including music)
+    const soundBtn = this.createIconButton(startX + 60, startY, this.audio.isAllEnabled() ? '🔊' : '🔇', () => {
+      const enabled = this.audio.toggleAll();
+      soundBtn.setText(enabled ? '🔊' : '🔇');
     });
   }
 

@@ -64,27 +64,38 @@ export class AudioManager {
     this.speak(letterText, 0.9);
   }
 
+  // Resume audio context if suspended (browser autoplay policy)
+  private resumeAudioContext(): void {
+    const soundManager = this.scene.sound as Phaser.Sound.WebAudioSoundManager;
+    if (soundManager.context?.state === 'suspended') {
+      soundManager.context.resume();
+    }
+  }
+
   // Play sound effect
   playSfx(key: string, config?: Phaser.Types.Sound.SoundConfig): void {
     if (!this.soundEnabled) return;
 
     try {
+      this.resumeAudioContext();
       this.scene.sound.play(key, config);
     } catch (e) {
       console.warn(`Failed to play sound: ${key}`);
     }
   }
 
-  // Play background music
+  // Play background music (handles browser autoplay policy)
   playMusic(key: string, config?: Phaser.Types.Sound.SoundConfig): void {
     if (!this.musicEnabled) return;
 
     this.stopMusic();
 
     try {
+      this.resumeAudioContext();
+
       this.bgMusic = this.scene.sound.add(key, {
         loop: true,
-        volume: 0.5,
+        volume: 1,
         ...config,
       });
       this.bgMusic.play();
@@ -119,6 +130,27 @@ export class AudioManager {
     }
 
     return this.musicEnabled;
+  }
+
+  // Toggle all audio (sound effects + music)
+  toggleAll(): boolean {
+    const newState = !this.soundEnabled;
+
+    this.soundEnabled = newState;
+    this.musicEnabled = newState;
+    StorageManager.setSoundEnabled(newState);
+    StorageManager.setMusicEnabled(newState);
+
+    if (!newState) {
+      this.stopMusic();
+    }
+
+    return newState;
+  }
+
+  // Check if all audio is enabled
+  isAllEnabled(): boolean {
+    return this.soundEnabled && this.musicEnabled;
   }
 
   // Get current states

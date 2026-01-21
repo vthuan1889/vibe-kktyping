@@ -102,8 +102,8 @@ export class GameScene extends Phaser.Scene {
         this.scene.start(SCENES.TREASURE_MAP);
       });
     });
-    const soundBtn = this.createControlButton(GAME_WIDTH - 90, 35, this.audio.isSoundEnabled() ? '🔊' : '🔇', () => {
-      const enabled = this.audio.toggleSound();
+    const soundBtn = this.createControlButton(GAME_WIDTH - 90, 35, this.audio.isAllEnabled() ? '🔊' : '🔇', () => {
+      const enabled = this.audio.toggleAll();
       soundBtn.setText(enabled ? '🔊' : '🔇');
     });
     this.createControlButton(GAME_WIDTH - 40, 35, '⛶', () => {
