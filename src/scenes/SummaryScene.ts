@@ -3,16 +3,21 @@ import { SCENES, GAME_WIDTH, GAME_HEIGHT, COLORS, AUDIO, TRANSITION } from '../c
 import { getLandByLevel } from '../data/lands-config';
 import { getLevelConfig, LevelConfig } from '../data/level-data';
 import { AudioManager } from '../utils/audio-manager';
+import { StoryManager } from '../utils/story-manager';
 
 /**
- * SummaryScene - Level completion screen with stars
+ * SummaryScene - Level completion screen with stars and story modal
  */
 export class SummaryScene extends Phaser.Scene {
   private level = 1;
   private stars = 10;
   private mistakes = 0;
   private audio!: AudioManager;
+  private storyManager!: StoryManager;
   private levelConfig!: LevelConfig;
+  private skipTimer?: Phaser.Time.TimerEvent;
+  private storyModalElements: Phaser.GameObjects.GameObject[] = [];
+  private kakaAnimTween?: Phaser.Tweens.Tween;
 
   constructor() {
     super({ key: SCENES.SUMMARY });
@@ -28,8 +33,9 @@ export class SummaryScene extends Phaser.Scene {
   create(): void {
     const land = getLandByLevel(this.level);
 
-    // Initialize audio
+    // Initialize managers
     this.audio = new AudioManager(this);
+    this.storyManager = new StoryManager(this);
 
     // Fade in transition
     this.cameras.main.fadeIn(TRANSITION.FADE_IN, 0, 0, 0);
@@ -38,6 +44,21 @@ export class SummaryScene extends Phaser.Scene {
     this.createConfetti();
     this.createCard();
     this.createButtons();
+
+    // Show story modal after stars animation (delay ~2s)
+    if (this.audio.isSoundEnabled()) {
+      this.time.delayedCall(2000, () => {
+        this.showStoryModal();
+      });
+    }
+  }
+
+  shutdown(): void {
+    // Cleanup on scene exit
+    this.storyManager.stop();
+    if (this.skipTimer) {
+      this.skipTimer.destroy();
+    }
   }
 
   private createBackground(primary: number, secondary: number): void {
@@ -163,6 +184,137 @@ export class SummaryScene extends Phaser.Scene {
         ease: 'Back.easeOut',
       });
     }
+  }
+
+  private showStoryModal(): void {
+    const centerX = GAME_WIDTH / 2;
+    const centerY = GAME_HEIGHT / 2;
+
+    // Overlay
+    const overlay = this.add.graphics();
+    overlay.fillStyle(0x000000, 0.7);
+    overlay.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+    overlay.setDepth(100);
+    overlay.setAlpha(0);
+
+    // Modal card
+    const modalBg = this.add.graphics();
+    modalBg.fillStyle(0xffffff, 1);
+    modalBg.fillRoundedRect(centerX - 220, centerY - 140, 440, 280, 24);
+    modalBg.setDepth(101);
+    modalBg.setAlpha(0);
+
+    // Kaka speaking animation
+    const kaka = this.add.text(centerX, centerY - 60, '🐭💬', {
+      fontSize: '72px',
+    }).setOrigin(0.5).setDepth(102).setAlpha(0);
+
+    // Status text
+    const statusText = this.add.text(centerX, centerY + 30, 'Loading story...', {
+      fontFamily: 'Nunito',
+      fontSize: '20px',
+      color: '#666666',
+    }).setOrigin(0.5).setDepth(102).setAlpha(0);
+
+    // Skip button (hidden initially)
+    const skipBtn = this.createSkipButton(centerX, centerY + 90);
+    skipBtn.setDepth(102);
+    skipBtn.setAlpha(0);
+
+    // Store elements for cleanup
+    this.storyModalElements = [overlay, modalBg, kaka, statusText, skipBtn];
+
+    // Fade in animation
+    this.tweens.add({
+      targets: [overlay, modalBg, kaka, statusText],
+      alpha: 1,
+      duration: 300,
+      ease: 'Power2',
+    });
+
+    // Kaka speaking animation
+    this.kakaAnimTween = this.tweens.add({
+      targets: kaka,
+      scaleX: 1.1,
+      scaleY: 1.1,
+      duration: 400,
+      yoyo: true,
+      repeat: -1,
+    });
+
+    // Play story audio
+    this.storyManager.loadAndPlay(this.level, () => {
+      this.closeStoryModal();
+    });
+
+    statusText.setText('Kaka is telling a story...');
+
+    // Show skip button after 15 seconds
+    this.skipTimer = this.time.delayedCall(15000, () => {
+      this.tweens.add({
+        targets: skipBtn,
+        alpha: 1,
+        duration: 300,
+      });
+    });
+  }
+
+  private createSkipButton(x: number, y: number): Phaser.GameObjects.Container {
+    const container = this.add.container(x, y);
+
+    const bg = this.add.graphics();
+    bg.fillStyle(0xe8e8e8, 1);
+    bg.fillRoundedRect(-55, -22, 110, 44, 12);
+
+    const text = this.add.text(0, 0, 'Skip ⏭️', {
+      fontFamily: 'Fredoka One',
+      fontSize: '18px',
+      color: '#666666',
+    }).setOrigin(0.5);
+
+    container.add([bg, text]);
+
+    // Hit area
+    const hitArea = this.add.rectangle(0, 0, 110, 44, 0x000000, 0);
+    hitArea.setInteractive({ useHandCursor: true });
+    hitArea.on('pointerup', () => {
+      this.audio.playSfx(AUDIO.SFX.CLICK);
+      this.closeStoryModal();
+    });
+    container.add(hitArea);
+
+    return container;
+  }
+
+  private closeStoryModal(): void {
+    // Stop audio
+    this.storyManager.stop();
+
+    // Stop kaka animation tween
+    if (this.kakaAnimTween) {
+      this.kakaAnimTween.stop();
+      this.kakaAnimTween = undefined;
+    }
+
+    // Clear timer
+    if (this.skipTimer) {
+      this.skipTimer.destroy();
+      this.skipTimer = undefined;
+    }
+
+    // Check if modal elements still exist before animating
+    if (this.storyModalElements.length === 0) return;
+
+    // Fade out and destroy elements
+    this.tweens.add({
+      targets: this.storyModalElements,
+      alpha: 0,
+      duration: 200,
+      onComplete: () => {
+        this.storyModalElements.forEach((el) => el.destroy());
+        this.storyModalElements = [];
+      },
+    });
   }
 
   private createButtons(): void {
