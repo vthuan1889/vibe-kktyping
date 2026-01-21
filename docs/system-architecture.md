@@ -180,6 +180,10 @@ main.ts
    │         │    ├─ config/constants.ts
    │         │    ├─ data/level-data.ts
    │         │    ├─ data/lands-config.ts
+   │         │    ├─ data/stories-config.ts
+   │         │    │    └─ config/constants.ts (getStoryAudioKey)
+   │         │    ├─ data/stories-content.ts
+   │         │    │    └─ data/stories/*.ts (50 story texts)
    │         │    ├─ utils/storage-manager.ts
    │         │    └─ utils/audio-manager.ts
    │         └─ SummaryScene.ts
@@ -193,6 +197,7 @@ main.ts
 - **constants.ts** is the most depended-upon module (single source of truth)
 - **StorageManager** and **AudioManager** are used by multiple scenes
 - **LevelData** and **LandsConfig** are only used by GameScene/TreasureMapScene
+- **Story system** follows land-based organization (5 files for 5 lands)
 
 ---
 
@@ -299,7 +304,67 @@ getLevelConfig(level: number): LevelConfig
 - Levels 31-40: Long words (CANDY, SWEET, CAKE, COOKIE)
 - Levels 41-50: Science words (STAR, MOON, EARTH, ROCKET)
 
-### 5. Lands Configuration
+### 5. Story Data System
+
+Provides narrative content for each level with audio support.
+
+**Responsibilities:**
+- Return story text per level (1-50)
+- Provide story metadata (title, duration, audio key)
+- Organize stories by land theme
+
+**Key Functions:**
+```typescript
+getStoryText(level: number): string
+getStoryConfig(level: number): StoryConfig
+// Returns { level, title, duration, audioKey }
+```
+
+**Story Organization:**
+- `stories/cheese-factory.ts`: Levels 1-10
+- `stories/green-garden.ts`: Levels 11-20
+- `stories/blue-ocean.ts`: Levels 21-30
+- `stories/candy-land.ts`: Levels 31-40
+- `stories/space-adventure.ts`: Levels 41-50
+
+**Story Durations:**
+- Levels 1-10: 30s
+- Levels 11-20: 35s
+- Levels 21-30: 40s
+- Levels 31-40: 50s
+- Levels 41-50: 60s
+
+### 5. Story Data System
+
+Provides narrative content for each level with audio support.
+
+**Responsibilities:**
+- Return story text per level (1-50)
+- Provide story metadata (title, duration, audio key)
+- Organize stories by land theme
+
+**Key Functions:**
+```typescript
+getStoryText(level: number): string
+getStoryConfig(level: number): StoryConfig
+// Returns { level, title, duration, audioKey }
+```
+
+**Story Organization:**
+- `stories/cheese-factory.ts`: Levels 1-10
+- `stories/green-garden.ts`: Levels 11-20
+- `stories/blue-ocean.ts`: Levels 21-30
+- `stories/candy-land.ts`: Levels 31-40
+- `stories/space-adventure.ts`: Levels 41-50
+
+**Story Durations:**
+- Levels 1-10: 30s
+- Levels 11-20: 35s
+- Levels 21-30: 40s
+- Levels 31-40: 50s
+- Levels 41-50: 60s
+
+### 6. Lands Configuration
 
 Static configuration for 5 themed lands.
 

@@ -7,12 +7,23 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "generate:stories": "tsx scripts/generate-story-audio.ts"
   },
-  "keywords": ["typing", "game", "kids", "educational", "phaser"],
+  "keywords": [
+    "typing",
+    "game",
+    "kids",
+    "educational",
+    "phaser"
+  ],
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "@types/node": "^25.0.9",
+    "dotenv": "^17.2.3",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
     "typescript": "^5.3.3",
     "vite": "^5.4.0"
   },

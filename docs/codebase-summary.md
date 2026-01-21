@@ -77,6 +77,13 @@ vibe-kktyping/
 |------|---------|---------------|
 | `level-data.ts` | Generates level content dynamically | `getLevelConfig(level)` |
 | `lands-config.ts` | Configuration for 5 themed lands | `getLandByLevel(level)`, `getLandById(id)` |
+| `stories-config.ts` | Story metadata (title, duration, audio) | `getStoryConfig(level)` |
+| `stories-content.ts` | Story text aggregator | `getStoryText(level)` |
+| `stories/cheese-factory.ts` | Cheese Factory stories (levels 1-10) | `CHEESE_FACTORY_STORIES` |
+| `stories/green-garden.ts` | Green Garden stories (levels 11-20) | `GREEN_GARDEN_STORIES` |
+| `stories/blue-ocean.ts` | Blue Ocean stories (levels 21-30) | `BLUE_OCEAN_STORIES` |
+| `stories/candy-land.ts` | Candy Land stories (levels 31-40) | `CANDY_LAND_STORIES` |
+| `stories/space-adventure.ts` | Space Adventure stories (levels 41-50) | `SPACE_ADVENTURE_STORIES` |
 
 **Level Configuration:**
 - Levels 1-10: Home row letters (F, J, D, K, S, L, A, ;)

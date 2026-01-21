@@ -34,7 +34,9 @@
       "Bash(find:*)",
       "Bash(repomix --output repomix-output.xml)",
       "Bash(repomix.cmd:*)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run generate:stories:*)"
     ]
   }
 }
