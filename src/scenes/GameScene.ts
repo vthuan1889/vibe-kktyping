@@ -1,12 +1,13 @@
 import Phaser from 'phaser';
 import { SCENES, GAME_WIDTH, GAME_HEIGHT, COLORS, FINGER_COLORS, AUDIO, TRANSITION } from '../config/constants';
 import { getLevelConfig, LevelConfig } from '../data/level-data';
-import { getLandByLevel } from '../data/lands-config';
+import { getLandByLevel, LandConfig } from '../data/lands-config';
 import { StorageManager } from '../utils/storage-manager';
 import { AudioManager } from '../utils/audio-manager';
+import { getDecorativeElements, SPARKLE_EMOJIS } from '../config/background-config';
 
 /**
- * GameScene - Main typing gameplay
+ * GameScene - Main typing gameplay with themed visuals
  */
 export class GameScene extends Phaser.Scene {
   private level = 1;
@@ -14,12 +15,13 @@ export class GameScene extends Phaser.Scene {
   private currentIndex = 0;
   private mistakes = 0;
   private targetText!: Phaser.GameObjects.Text;
-  private targetTextOriginalX = 0; // Store original X position
+  private targetTextOriginalX = 0;
   private progressBar!: Phaser.GameObjects.Graphics;
   private keyboardKeys: Map<string, Phaser.GameObjects.Container> = new Map();
   private mascot!: Phaser.GameObjects.Text;
-  private isShaking = false; // Prevent multiple shake animations
+  private isShaking = false;
   private audio!: AudioManager;
+  private land!: LandConfig;
 
   constructor() {
     super({ key: SCENES.GAME });
@@ -33,16 +35,17 @@ export class GameScene extends Phaser.Scene {
 
   create(): void {
     this.levelConfig = getLevelConfig(this.level);
-    const land = getLandByLevel(this.level);
+    this.land = getLandByLevel(this.level);
 
     // Initialize audio
     this.audio = new AudioManager(this);
-    this.audio.playMusic(land.bgm);
+    this.audio.playMusic(this.land.bgm);
 
     // Fade in transition
     this.cameras.main.fadeIn(TRANSITION.FADE_IN, 0, 0, 0);
 
-    this.createBackground(land.primary, land.secondary);
+    this.createBackground();
+    this.createFloatingDecorations();
     this.createHeader();
     this.createMascot();
     this.createTargetLetter();
@@ -58,29 +61,78 @@ export class GameScene extends Phaser.Scene {
     this.input.keyboard?.on('keydown', this.handleKeyPress, this);
   }
 
-  private createBackground(primary: number, secondary: number): void {
-    const bg = this.add.graphics();
-    bg.fillGradientStyle(primary, primary, secondary, secondary, 1);
-    bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+  shutdown(): void {
+    // Cleanup all tweens to prevent memory leaks
+    this.tweens.killAll();
+    this.input.keyboard?.off('keydown', this.handleKeyPress, this);
+  }
 
-    // Add decorative circles
-    for (let i = 0; i < 15; i++) {
+  private createBackground(): void {
+    // Use background image if loaded, otherwise fallback to gradient
+    if (this.textures.exists(this.land.backgroundKey)) {
+      const bg = this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, this.land.backgroundKey);
+      bg.setDisplaySize(GAME_WIDTH, GAME_HEIGHT);
+    } else {
+      // Gradient fallback
+      const bg = this.add.graphics();
+      bg.fillGradientStyle(this.land.primary, this.land.primary, this.land.secondary, this.land.secondary, 1);
+      bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+    }
+  }
+
+  private createFloatingDecorations(): void {
+    const elements = getDecorativeElements(this.land.name);
+
+    for (let i = 0; i < 12; i++) {
+      const emoji = elements[i % elements.length];
       const x = Phaser.Math.Between(50, GAME_WIDTH - 50);
-      const y = Phaser.Math.Between(100, 400);
-      const r = Phaser.Math.Between(10, 30);
-      this.add.circle(x, y, r, 0xffffff, 0.15);
+      const y = Phaser.Math.Between(80, 380);
+      const size = Phaser.Math.Between(22, 36);
+
+      const decoration = this.add.text(x, y, emoji, {
+        fontSize: `${size}px`,
+      }).setAlpha(0.25);
+
+      // Gentle floating animation
+      this.tweens.add({
+        targets: decoration,
+        y: y - Phaser.Math.Between(10, 20),
+        duration: Phaser.Math.Between(2500, 4000),
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut',
+        delay: Phaser.Math.Between(0, 1000),
+      });
+    }
+  }
+
+  private createSparkles(x: number, y: number): void {
+    for (let i = 0; i < 5; i++) {
+      const sparkle = this.add.text(
+        x + Phaser.Math.Between(-35, 35),
+        y + Phaser.Math.Between(-35, 35),
+        SPARKLE_EMOJIS[i % SPARKLE_EMOJIS.length],
+        { fontSize: '24px' }
+      );
+
+      this.tweens.add({
+        targets: sparkle,
+        y: sparkle.y - 50,
+        alpha: 0,
+        scale: 0.5,
+        duration: 500,
+        onComplete: () => sparkle.destroy(),
+      });
     }
   }
 
   private createHeader(): void {
-    const land = getLandByLevel(this.level);
-
     // Level info badge
     const levelBadge = this.add.graphics();
     levelBadge.fillStyle(0xffffff, 0.9);
     levelBadge.fillRoundedRect(25, 15, 130, 40, 20);
 
-    this.add.text(90, 35, `${land.emoji} Level ${this.level}`, {
+    this.add.text(90, 35, `${this.land.emoji} Level ${this.level}`, {
       fontFamily: 'Fredoka One',
       fontSize: '18px',
       color: '#333333',
@@ -116,22 +168,18 @@ export class GameScene extends Phaser.Scene {
   }
 
   private createControlButton(x: number, y: number, icon: string, onClick: () => void): Phaser.GameObjects.Text {
-    // Container for proper scaling from center
     const container = this.add.container(x, y);
 
-    // Button background (dark semi-transparent)
     const bg = this.add.graphics();
     bg.fillStyle(0x333333, 0.8);
     bg.fillRoundedRect(-22, -22, 44, 44, 10);
 
-    // Icon with shadow
     const iconText = this.add.text(0, 0, icon, {
       fontSize: '22px',
     }).setOrigin(0.5).setShadow(1, 1, '#000000', 2);
 
     container.add([bg, iconText]);
 
-    // Hit area
     const hitArea = this.add.rectangle(x, y, 44, 44, 0x000000, 0);
     hitArea.setInteractive({ useHandCursor: true });
 
@@ -157,11 +205,12 @@ export class GameScene extends Phaser.Scene {
   }
 
   private createMascot(): void {
-    // Mascot on the left side
+    // Mascot with land-specific character
     this.add.circle(130, 250, 70, 0xffffff, 0.9);
 
-    this.mascot = this.add.text(130, 250, '🐭', {
-      fontSize: '80px',
+    const mascotEmoji = this.land.characterEmoji || '🐭';
+    this.mascot = this.add.text(130, 250, mascotEmoji, {
+      fontSize: '70px',
     }).setOrigin(0.5);
 
     // Speech bubble
@@ -190,24 +239,20 @@ export class GameScene extends Phaser.Scene {
     const centerX = GAME_WIDTH / 2;
     const centerY = 220;
 
-    // Instruction
     this.add.text(centerX, centerY - 120, 'Press the key:', {
       fontFamily: 'Nunito',
       fontSize: '28px',
       color: '#ffffff',
     }).setOrigin(0.5).setShadow(2, 2, '#000000', 4);
 
-    // Target letter (large)
     this.targetText = this.add.text(centerX, centerY, this.getCurrentTarget(), {
       fontFamily: 'Fredoka One',
       fontSize: '180px',
       color: '#ffffff',
     }).setOrigin(0.5).setShadow(4, 4, 'rgba(0,0,0,0.3)', 8);
 
-    // Store original X position for shake animation reset
     this.targetTextOriginalX = centerX;
 
-    // Bounce animation
     this.tweens.add({
       targets: this.targetText,
       y: centerY - 15,
@@ -223,14 +268,12 @@ export class GameScene extends Phaser.Scene {
     const keySize = 50;
     const gap = 6;
 
-    // QWERTY layout
     const rows = [
       ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
       ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';'],
       ['Z', 'X', 'C', 'V', 'B', 'N', 'M'],
     ];
 
-    // Finger mapping for home row
     const fingerMap: Record<string, number> = {
       'A': FINGER_COLORS.PINKY, 'Q': FINGER_COLORS.PINKY, 'Z': FINGER_COLORS.PINKY,
       'S': FINGER_COLORS.RING, 'W': FINGER_COLORS.RING, 'X': FINGER_COLORS.RING,
@@ -245,14 +288,8 @@ export class GameScene extends Phaser.Scene {
     };
 
     rows.forEach((row, rowIndex) => {
-      // Calculate row offset for QWERTY staggered layout
-      // Row 0 (QWERTY): no offset
-      // Row 1 (ASDF): offset by half a key width
-      // Row 2 (ZXCV): offset by 1 key width (to align Z under S-D area)
       const rowOffsets = [0, 28, 56];
       const rowOffset = rowOffsets[rowIndex];
-
-      // Calculate startX based on row 0 width to keep alignment
       const row0Width = 10 * (keySize + gap) - gap;
       const startX = (GAME_WIDTH - row0Width) / 2 + rowOffset;
 
@@ -262,26 +299,19 @@ export class GameScene extends Phaser.Scene {
 
         const container = this.add.container(x, y);
 
-        // Key background
         const keyBg = this.add.graphics();
         keyBg.fillStyle(0xf0f0f0, 1);
         keyBg.fillRoundedRect(-keySize / 2, -keySize / 2, keySize, keySize, 8);
-
-        // Key shadow
         keyBg.fillStyle(0xcccccc, 1);
         keyBg.fillRoundedRect(-keySize / 2, -keySize / 2 + 4, keySize, keySize, 8);
-
-        // Key surface
         keyBg.fillStyle(0xf5f5f5, 1);
         keyBg.fillRoundedRect(-keySize / 2, -keySize / 2, keySize, keySize - 4, 8);
 
-        // Finger indicator (only for levels 1-10)
         if (this.level <= 10 && fingerMap[key]) {
           keyBg.fillStyle(fingerMap[key], 1);
           keyBg.fillRoundedRect(-keySize / 2 + 5, keySize / 2 - 10, keySize - 10, 6, 3);
         }
 
-        // Key label
         const label = this.add.text(0, -2, key, {
           fontFamily: 'Fredoka One',
           fontSize: '20px',
@@ -297,8 +327,7 @@ export class GameScene extends Phaser.Scene {
   private highlightCurrentKey(): void {
     const currentKey = this.getCurrentTarget().toUpperCase();
 
-    // Reset all keys
-    this.keyboardKeys.forEach((container, _key) => {
+    this.keyboardKeys.forEach((container) => {
       const keyBg = container.first as Phaser.GameObjects.Graphics;
       keyBg.clear();
 
@@ -313,7 +342,6 @@ export class GameScene extends Phaser.Scene {
       container.setScale(1);
     });
 
-    // Highlight active key
     const activeContainer = this.keyboardKeys.get(currentKey);
     if (activeContainer) {
       const keyBg = activeContainer.first as Phaser.GameObjects.Graphics;
@@ -327,7 +355,6 @@ export class GameScene extends Phaser.Scene {
       keyBg.fillStyle(COLORS.SUCCESS, 1);
       keyBg.fillRoundedRect(-keySize / 2, -keySize / 2, keySize, keySize - 4, 8);
 
-      // Pulse animation
       this.tweens.add({
         targets: activeContainer,
         scale: 1.15,
@@ -337,7 +364,6 @@ export class GameScene extends Phaser.Scene {
         ease: 'Sine.easeInOut',
       });
 
-      // Glow effect
       activeContainer.setDepth(10);
     }
   }
@@ -360,6 +386,9 @@ export class GameScene extends Phaser.Scene {
   private handleCorrectKey(): void {
     this.audio.playSfx(AUDIO.SFX.CORRECT);
 
+    // Add sparkle effect
+    this.createSparkles(this.targetText.x, this.targetText.y);
+
     // Success animation on target letter
     this.tweens.add({
       targets: this.targetText,
@@ -376,7 +405,6 @@ export class GameScene extends Phaser.Scene {
         } else {
           this.targetText.setText(this.getCurrentTarget());
           this.highlightCurrentKey();
-          // Speak next letter after a short delay
           this.time.delayedCall(300, () => {
             this.audio.speakLetter(this.getCurrentTarget());
           });
@@ -397,11 +425,9 @@ export class GameScene extends Phaser.Scene {
     this.mistakes++;
     this.audio.playSfx(AUDIO.SFX.WRONG);
 
-    // Prevent multiple shake animations from stacking
     if (this.isShaking) return;
     this.isShaking = true;
 
-    // Shake animation on target letter - always use original position
     this.tweens.add({
       targets: this.targetText,
       x: this.targetTextOriginalX + 15,
@@ -412,14 +438,12 @@ export class GameScene extends Phaser.Scene {
         this.targetText.setTint(0xff0000);
       },
       onComplete: () => {
-        // Reset to exact original position
         this.targetText.x = this.targetTextOriginalX;
         this.targetText.setTint(0xffffff);
         this.isShaking = false;
       },
     });
 
-    // Mascot confused animation
     this.tweens.add({
       targets: this.mascot,
       angle: -15,
@@ -446,18 +470,14 @@ export class GameScene extends Phaser.Scene {
     this.audio.playSfx(AUDIO.SFX.COMPLETE);
     this.audio.stopMusic();
 
-    // Calculate stars
     let stars = 10;
 
     if (this.levelConfig.scoringMode === 'accuracy') {
       stars = Math.max(0, 10 - this.mistakes);
     } else if (this.levelConfig.scoringMode === 'mastery') {
-      // Could factor in time here too
       stars = Math.max(0, 10 - this.mistakes * 2);
     }
-    // 'encouragement' mode always gives 10 stars
 
-    // Save progress
     StorageManager.setLevelStars(this.level, stars);
 
     if (this.level < 50) {
@@ -467,7 +487,6 @@ export class GameScene extends Phaser.Scene {
       }
     }
 
-    // Go to summary
     this.cameras.main.fadeOut(TRANSITION.FADE_OUT, 0, 0, 0);
     this.cameras.main.once('camerafadeoutcomplete', () => {
       this.scene.start(SCENES.SUMMARY, {

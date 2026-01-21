@@ -11,6 +11,8 @@ export interface LandConfig {
   accent: number;
   content: 'letters' | 'words-short' | 'words-medium' | 'words-long' | 'words-science';
   bgm: string;
+  backgroundKey: string;
+  characterEmoji: string;
 }
 
 export const LANDS_CONFIG: LandConfig[] = [
@@ -25,6 +27,8 @@ export const LANDS_CONFIG: LandConfig[] = [
     accent: COLORS.CHEESE_FACTORY.accent,
     content: 'letters',
     bgm: AUDIO.BGM.CHEESE_FACTORY,
+    backgroundKey: 'bg-cheese-factory',
+    characterEmoji: '🐭👨‍🍳',
   },
   {
     id: 2,
@@ -37,6 +41,8 @@ export const LANDS_CONFIG: LandConfig[] = [
     accent: COLORS.GREEN_GARDEN.accent,
     content: 'words-short',
     bgm: AUDIO.BGM.GREEN_GARDEN,
+    backgroundKey: 'bg-green-garden',
+    characterEmoji: '🐭🌻',
   },
   {
     id: 3,
@@ -49,6 +55,8 @@ export const LANDS_CONFIG: LandConfig[] = [
     accent: COLORS.BLUE_OCEAN.accent,
     content: 'words-medium',
     bgm: AUDIO.BGM.BLUE_OCEAN,
+    backgroundKey: 'bg-blue-ocean',
+    characterEmoji: '🐭🤿',
   },
   {
     id: 4,
@@ -61,6 +69,8 @@ export const LANDS_CONFIG: LandConfig[] = [
     accent: COLORS.CANDY_LAND.accent,
     content: 'words-long',
     bgm: AUDIO.BGM.CANDY_LAND,
+    backgroundKey: 'bg-candy-land',
+    characterEmoji: '🐭🍭',
   },
   {
     id: 5,
@@ -73,6 +83,8 @@ export const LANDS_CONFIG: LandConfig[] = [
     accent: COLORS.SPACE.accent,
     content: 'words-science',
     bgm: AUDIO.BGM.SPACE,
+    backgroundKey: 'bg-space-adventure',
+    characterEmoji: '🐭🚀',
   },
 ];
 
